@@ -1,0 +1,81 @@
+<!--index.wxml-->
+<view class="container">
+  <wxs module="format">
+    var feo = require('../../wxs/forEachObj.wxs');
+    module.exports.obj2ListStringify = function(obj) {
+      var list = [];
+      feo.forEachObj(obj, function(key, value) {
+        list.push({ key: key, value: typeof value === 'object' ? JSON.stringify(value) : value });
+      })
+      return list;
+    }
+  </wxs>
+  <view class="obj_container">
+    <view class="title">常用的数据结构</view>
+    <view class="content">
+      <view class="cont_title">源数据：</view>
+      <view class="image_box">
+        <image
+          src="../../image/expl1.png"
+          style="width: 702rpx; height: 414rpx"
+        />
+      </view>
+      <view class="cont_title">遍历后：</view>
+      <view class="table_list">
+        <!-- table header -->
+        <view class="header">
+          <view class="cell">
+            <text class="text">key</text>
+          </view>
+          <view class="cell">
+            <text class="text">value</text>
+          </view>
+        </view>
+        <!-- table header -->
+        <!-- table body -->
+        <view class="item" wx:for="{{format.obj2ListStringify(source1)}}" wx:key="key">
+          <view class="cell">
+            <text class="text">{{ item.key }}</text>
+          </view>
+          <view class="cell">
+            <text class="text">{{ item.value }}</text>
+          </view>
+        </view>
+        <!-- table body -->
+      </view>
+    </view>
+    <view class="title">特殊的数据结构</view>
+    <view class="content">
+      <view class="cont_title">源数据：</view>
+      <view class="image_box">
+        <image
+          src="../../image/expl2.png"
+          style="width: 702rpx; height: 448rpx"
+        />
+      </view>
+      <view class="cont_title">遍历后：</view>
+      <view class="table_list">
+        <!-- table header -->
+        <view class="header">
+          <view class="cell">
+            <text class="text">key</text>
+          </view>
+          <view class="cell">
+            <text class="text">value</text>
+          </view>
+        </view>
+        <!-- table header -->
+        <!-- table body -->
+        <view class="item" wx:for="{{format.obj2ListStringify(source2)}}" wx:key="key">
+          <view class="cell">
+            <text class="text">{{ item.key }}</text>
+          </view>
+          <view class="cell">
+            <text class="text">{{ item.value }}</text>
+          </view>
+        </view>
+        <!-- table body -->
+      </view>
+    </view>
+  </view>
+</view>

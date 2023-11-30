@@ -1,6 +1,6 @@
-# A Weixin Script (wxs) Object Iterator
+# 一个Weixin Script (wxs) 对象迭代器
 
-> Use example:
+> 使用示例：
 ``` shell
 var feo = require('forEachObj.wxs');
 
@@ -12,9 +12,9 @@ feo.forEachObj(obj, function(key, value) {
   // ...something code
 });
 ```
-Please refer to the project source code for specific usage.
+具体使用请详见项目源码。
 
-## Language
+## 语言
 - <a href="README.md">[English]</a> (README.md)
 - <a href="README.zh_CN.md">[简体中文]</a> (README.zh_CN.md)
 - <a href="README.zh_TW.md">[繁體中文]</a> (README.zh_TW.md)

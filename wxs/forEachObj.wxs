@@ -1,0 +1,151 @@
+/*
+ * forEachObj.wxs v1.0.0
+ * Copyright (c)2023 Chen Wei
+ * Released under the MIT License.
+ */
+function forEachObj(obj, callback) {
+  var json = JSON.stringify(obj)
+    .replace(getRegExp('\n', 'g'), '')
+    .replace(getRegExp('^\{'), '')
+    .replace(getRegExp('\}$'), '')
+    .trim();
+  if (typeof callback !== 'function' || json === '') return;
+  var specialExp = getRegExp('\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
+  var contExp = getRegExp('"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?', 'g');
+  var dangerousExp = getRegExp('[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]', 'g');
+  dangerousExp.lastIndex = 0;
+  var commaExp = getRegExp('\,', 'g');
+  var bklExp = getRegExp('\[', 'g');
+  var bkrExp = getRegExp('\]', 'g');
+  var bslExp = getRegExp('\{', 'g');
+  var bsrExp = getRegExp('\}', 'g');
+  if (dangerousExp.test(json)) {
+    json = json.replace(dangerousExp, function(str) {
+      return '\\u' + ('0000' + str.charCodeAt(0).toString(16)).slice(-4);
+    });
+  }
+  var specialFlags = json.match(specialExp) || [];
+  var dedupFlags = [];
+  for (var sp = 0; sp < specialFlags.length; sp++) {
+    var item = specialFlags[sp];
+    if (dedupFlags.indexOf(item) === -1) {
+      dedupFlags.push(item);
+    }
+  }
+  dedupFlags.sort(function(a,b) {
+    var perv = a.split('').filter(function(f) { return '\\' === f }).length;
+    var next = b.split('').filter(function(f) { return '\\' === f }).length;
+    return next - perv;
+  });
+  // 特殊字符转义(随机字符串为防止JSON内容中有与转义字符串内容冲突的可能)
+  // , comma value
+  // [ bkl value
+  // ] bkr value
+  // { bsl value
+  // } bsr value
+  // 随机转义符生成
+  var rmSize = 7;
+  var ltSize = rmSize + dedupFlags.length;
+  var letters = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+  var randomList = [];
+  for (var l = 0; l < ltSize; l++) {
+    var flag = true;
+    while(flag) {
+      var strList = [];
+      while(strList.length < 5) {
+        var idx = Math.floor(Math.random() * letters.length);
+        if (strList.indexOf(letters[idx]) === -1) {
+          strList.push(letters[idx]);
+        }
+      }
+      var joinStr = '@' + strList.join('') + '@';
+      if (randomList.indexOf(joinStr) === -1 && json.indexOf(joinStr) === -1) {
+        randomList.push(joinStr);
+        flag = false;
+      }
+    }
+  }
+  var replaceMap = {
+    comma: randomList[0],
+    bkl: randomList[1],
+    bkr: randomList[2],
+    bsl: randomList[3],
+    bsr: randomList[4],
+    contSplit: randomList[5],
+    split: randomList[6]
+  };
+  var specialRandoms = randomList.slice(rmSize, ltSize);
+  // 随机转义符end
+  // 特殊字符转义
+  var eqFlag = '\\'.charAt(0);
+  for (var dpf = 0; dpf < dedupFlags.length; dpf++) {
+    var item = dedupFlags[dpf];
+    // wxs这里面要加'\\' 否则转义错误
+    var targetItem = item.split('').map(function(m) {
+      var isSpecFlag = m.charAt(0) === eqFlag;
+      if (isSpecFlag) {
+        m = eqFlag + m;
+      }
+      return m;
+    }).join('');
+    json = json.replace(getRegExp(targetItem, 'g'), specialRandoms[dpf]);
+  }
+  // 括号逗号字符转义
+  var jsonConts = json.match(contExp) || [];
+  var jsonFlags = json.replace(contExp, replaceMap.contSplit).split(replaceMap.contSplit);
+  var joinJson = '';
+  for (var j = 0; j < jsonConts.length; j++) {
+    var item = jsonConts[j];
+    if (commaExp.test(item) || bklExp.test(item) || bkrExp.test(item) || bslExp.test(item) || bsrExp.test(item)) {
+      item = item
+        .replace(getRegExp('\,$'), '')
+        .replace(commaExp, replaceMap.comma)
+        .replace(bklExp, replaceMap.bkl)
+        .replace(bkrExp, replaceMap.bkr)
+        .replace(bslExp, replaceMap.bsl)
+        .replace(bsrExp, replaceMap.bsr);
+    }
+    joinJson += (jsonFlags[0] || '') + item;
+    jsonFlags.shift();
+  }
+  json = joinJson + (jsonFlags[0] || '');
+  // 以逗号分隔截取字符串
+  var jsonList = json.replace(getRegExp('\,', 'g'), ',' + replaceMap.split).split(replaceMap.split);
+  var count = 0;
+  var jsonStr = '';
+  for (var i = 0; i < jsonList.length; i++) {
+    var item = jsonList[i];
+    if (getRegExp('\[|\{|\]|\}').test(item)) {
+      var start = item.match(getRegExp('\[|\{', 'g')) || [];
+      var end = item.match(getRegExp('\]|\}', 'g')) || [];
+      var diff = start.length - end.length;
+      count += diff;
+      jsonStr += item;
+    } else if (count > 0) {
+      jsonStr += item;
+    } else if (count === 0 && jsonStr === '') {
+      jsonStr = item;
+    }
+    if (count === 0) {
+      // 完整的json在转义回来
+      jsonStr = jsonStr
+        .replace(getRegExp(replaceMap.comma, 'g'), ',')
+        .replace(getRegExp(replaceMap.bkl, 'g'), '[')
+        .replace(getRegExp(replaceMap.bkr, 'g'), ']')
+        .replace(getRegExp(replaceMap.bsl, 'g'), '{')
+        .replace(getRegExp(replaceMap.bsr, 'g'), '}');
+      var keyStr = (jsonStr.match(getRegExp('"[^"\\\n\r]*"')) || [])[0] || '';
+      var valueStr = jsonStr.replace(keyStr, '').replace(getRegExp('^:'),'').replace(getRegExp('\,$'), '') || '';
+      for (var sr = 0; sr < specialRandoms.length; sr++) {
+        var item = specialRandoms[sr];
+        keyStr = keyStr.replace(getRegExp(item, 'g'), dedupFlags[sr]);
+        valueStr = valueStr.replace(getRegExp(item, 'g'), dedupFlags[sr]);
+      }
+      var kv = JSON.parse('['+keyStr+','+valueStr+']');
+      callback(kv[0], kv[1]);
+      jsonStr = '';
+    }
+  }
+}
+
+module.exports.forEachObj = forEachObj

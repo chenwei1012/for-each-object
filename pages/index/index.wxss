@@ -1,0 +1,77 @@
+/**index.wxss**/
+.obj_container {
+  width: 100%;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+}
+.obj_container .title {
+  width: 100%;
+  padding: 32rpx 0;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.obj_container .content {
+  width: 100%;
+}
+
+.obj_container .cont_title {
+  width: 100%;
+  margin-bottom: 16rpx;
+  font-size: 28rpx;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.obj_container .image_box {
+  width: 100%;
+  margin-bottom: 32rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.obj_container .table_list {
+  width: 100%;
+  margin-bottom: 32rpx;
+  box-sizing: border-box;
+  border: 1px solid aliceblue;
+}
+
+.obj_container .table_list .header {
+  background-color: aliceblue;
+}
+
+.obj_container .table_list .header,
+.obj_container .table_list .item {
+  width: 100%;
+  display: flex;
+  border-bottom: 1px solid aliceblue;
+}
+
+.obj_container .table_list .item:last-child {
+  border-bottom: 0;
+}
+
+.obj_container .table_list .cell {
+  width: 50%;
+  min-height: 80rpx;
+	padding: 20rpx;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 32rpx;
+	color: rgba( 0, 0, 0, 0.75);
+	word-break: break-all;
+  border-right: 1px solid aliceblue;
+}
+
+.obj_container .table_list .cell:last-child {
+  border-right: 0;
+}
+
+.obj_container .table_list .text {
+  width: 100%;
+}
